@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finandica · Simulador Mapa do Patrimônio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#070b14;--card:#0e1524;--ln:#1e2a44;--tx:#e8f0ff;--mu:#8a9bc0;--c:#00f5d4;--m:#ff2bd6;--y:#ffe14d;--w:480px;-webkit-text-size-adjust:100%;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.app{max-width:var(--w);margin:0 auto;padding:14px 14px 90px;background:radial-gradient(circle at 80% -10%,#0b3a4a55,transparent 50%),radial-gradient(circle at 0 20%,#4a0b4a44,transparent 45%)}
+h1{font-size:18px;margin:4px 0;letter-spacing:.5px}h1 b{color:var(--c);text-shadow:0 0 10px var(--c)}
+.sub{color:var(--mu);font-size:12px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px;margin:12px 0}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mu);margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.k{border-radius:14px;padding:12px;border:1px solid var(--c);box-shadow:0 0 14px #00f5d433 inset,0 0 12px #00f5d422}
+.k.m{border-color:var(--m);box-shadow:0 0 14px #ff2bd633 inset,0 0 12px #ff2bd622}
+.k small{display:block;color:var(--mu);font-size:11px}.k strong{font-size:19px;color:var(--c);text-shadow:0 0 8px #00f5d488}.k.m strong{color:var(--m);text-shadow:0 0 8px #ff2bd688}
+.k em{font-style:normal;font-size:11px;color:var(--mu);display:block;margin-top:2px}.k strong{display:block}
+label{display:block;font-size:11px;color:var(--mu);margin-bottom:3px}
+input{width:100%;background:#0a1020;border:1px solid var(--ln);color:var(--tx);border-radius:10px;padding:10px;font-size:16px;outline:none}
+input:focus{border-color:var(--c);box-shadow:0 0 8px #00f5d455}
+.row{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:8px;align-items:end;margin-bottom:8px}.row span{font-size:13px;padding-bottom:10px}
+svg{width:100%;height:auto;display:block;touch-action:pan-y;cursor:crosshair}button.tg{flex:none;padding:7px 12px;font-size:12px;margin-bottom:8px;box-shadow:none}.rd{font-size:12px;color:var(--mu);margin-bottom:6px;line-height:1.5;min-height:36px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:#070b14ee;border-top:1px solid var(--ln);display:flex;gap:10px;max-width:var(--w);margin:0 auto}
+button{flex:1;padding:13px;border-radius:12px;border:1px solid var(--c);background:transparent;color:var(--c);font-weight:700;font-size:14px;box-shadow:0 0 12px #00f5d444}
+button.p{background:var(--m);border-color:var(--m);color:#fff;box-shadow:0 0 14px #ff2bd699}
+.st{font-size:12px;margin-top:8px}.ok{color:var(--c)}.no{color:var(--y)}
+#md{display:none;position:fixed;inset:0;background:#000c;z-index:9;overflow:auto;padding:20px 14px}
+#md .in{max-width:520px;margin:0 auto;background:var(--card);border:1px solid var(--m);border-radius:16px;padding:16px;box-shadow:0 0 20px #ff2bd655}
+.et{display:flex;gap:10px;margin:12px 0}.et i{flex:0 0 28px;height:28px;border-radius:50%;border:1px solid var(--c);color:var(--c);display:grid;place-items:center;font-style:normal;font-size:13px;box-shadow:0 0 8px #00f5d466}
+.et b{font-size:14px}.et p{margin:2px 0 0;font-size:12px;color:var(--mu)}
+.fn{font-size:10px;color:var(--mu);margin-top:14px;line-height:1.4}
+button{cursor:pointer;font-family:inherit}button:focus-visible,input:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.layout .card:first-child{margin-top:0}
+@media (min-width:600px){:root{--w:680px}}
+@media (min-width:900px){
+:root{--w:1140px}
+.app{padding:28px 32px 110px}
+h1{font-size:26px}.sub{font-size:14px;margin-bottom:18px}
+.layout{display:grid;grid-template-columns:minmax(340px,420px) 1fr;gap:22px;align-items:start}
+.inp{order:-1}
+.card{padding:18px}
+.k strong{font-size:23px}
+.rd{font-size:13px}
+.bar{justify-content:center;max-width:none}
+.bar button{flex:0 1 300px}
+}
+@media (hover:hover){button:hover{filter:brightness(1.15)}}
+.topb{display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--ln);margin-bottom:8px}
+.topb .tg{margin:0;flex:none}.tn{flex:1;min-width:0}.tn b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tn small{color:var(--mu);font-size:11px}
+.hrow{display:flex;gap:10px;margin:8px 0 12px}.hrow2{display:flex;gap:10px;align-items:center;margin-bottom:10px}.hrow2 span{color:var(--mu);font-size:12px;white-space:nowrap}
+.plist{display:grid;gap:12px;grid-template-columns:1fr}
+.pc{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px}
+.ph{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.pn{font-size:16px;word-break:break-word}.pnote{color:var(--mu);font-size:12px;margin-top:2px;word-break:break-word}
+.chip{flex:none;font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid;white-space:nowrap}.chip.ok{color:var(--c);border-color:var(--c)}.chip.no{color:var(--y);border-color:var(--y)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 8px}.g3 small{display:block;color:var(--mu);font-size:10px;line-height:1.3}.g3 strong{font-size:14px;color:var(--c)}.g3 div:nth-child(3) strong{color:var(--m)}
+.pm{font-size:11px;color:var(--mu);margin-bottom:10px}
+.pa>button{width:100%;padding:11px;font-size:14px}.pa2{display:flex;gap:8px;margin-top:8px}.pa2 button{padding:9px 6px;font-size:12.5px;font-weight:600;box-shadow:none;border-color:var(--ln);color:var(--tx)}
+button.dg{border-color:#ff5c7a;color:#ff8da1;box-shadow:none}.pa2 button.dg{border-color:#ff5c7a;color:#ff8da1}
+.empty{text-align:center;color:var(--mu);padding:36px 14px;border:1px dashed var(--ln);border-radius:16px;font-size:14px;line-height:1.7}.empty b{color:var(--tx)}
+.warn{background:#3a2e08;border:1px solid var(--y);color:var(--y);border-radius:12px;padding:10px 12px;font-size:12px;margin:8px 0;line-height:1.5}
+.bk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.bk .tg{margin:0}
+#dlg{display:none;position:fixed;inset:0;background:#000c;z-index:20;overflow:auto;padding:20px 14px}
+#dlg .in{max-width:420px;margin:8vh auto 0;background:var(--card);border:1px solid var(--c);border-radius:16px;padding:16px;box-shadow:0 0 20px #00f5d433}
+.dact{display:flex;gap:10px;margin-top:14px}
+#toast{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--c);color:var(--tx);padding:10px 16px;border-radius:12px;font-size:13px;z-index:30;max-width:90%;text-align:center}
+@media (min-width:600px){.plist{grid-template-columns:1fr 1fr}}
+@media (min-width:900px){.plist{grid-template-columns:repeat(3,1fr)}.hrow button{flex:0 1 260px}.hrow2 input{max-width:380px}#toast{bottom:90px}}
+</style></head><body><div id="home" class="app">
+<h1>FINANDICA <b>▸ PLANOS FINANCEIROS</b></h1>
+<div class="sub">Cadastre vários planos, abra para editar e exclua quando quiser. Tudo é salvo automaticamente.</div>
+<div id="warn" class="warn" style="display:none">⚠ Este navegador não permite salvar dados. Os planos ficam só enquanto esta página estiver aberta; use “Exportar backup” para guardá-los.</div>
+<div class="hrow"><button class="p" id="bN">＋ Novo plano</button></div>
+<div class="hrow2"><input id="srch" type="search" placeholder="Buscar plano por nome ou cliente" style="display:none"><span id="cnt"></span></div>
+<div id="lst" class="plist"></div>
+<div class="fn" style="margin-top:18px">Seus planos ficam salvos neste aparelho e neste navegador. Para levá-los a outro aparelho, exporte um backup e importe lá.</div>
+<div class="bk"><button class="tg" id="bX">⤓ Exportar backup</button><button class="tg" id="bImp">⤒ Importar backup</button><input type="file" id="fi" accept=".json,application/json" hidden></div>
+</div>
+<div id="sim" class="app" style="display:none">
+<div class="topb"><button class="tg" id="bBack">← Planos</button><div class="tn"><b id="pn"></b><small id="sv"></small></div><button class="tg" id="bRen">✎ Renomear</button></div>
+<h1>FINANDICA <b>▸ MAPA DO PATRIMÔNIO</b></h1>
+<div class="sub">Simulador: aposentadoria pelo INSS × plano estruturado · valores de hoje (já descontada a inflação)</div>
+
+<div class="layout"><div class="res">
+<div class="card"><h2>Resultado em <span id="tA">30</span> anos</h2>
+<div class="grid">
+<div class="k m"><small>Só INSS (renda/mês)</small><strong id="rI">-</strong><em id="rIp"></em></div>
+<div class="k"><small>Mapa do Patrimônio (renda/mês)</small><strong id="rM">-</strong><em id="rMp"></em></div>
+<div class="k"><small>Patrimônio acumulado</small><strong id="pat">-</strong><em id="aTot"></em></div>
+<div class="k m"><small>Meta de renda</small><strong id="mt">-</strong><em id="need"></em></div>
+</div><div class="st" id="stt"></div></div>
+
+<div class="card"><h2>Evolução do patrimônio</h2><button class="tg" id="bI2">☐ Mostrar inflação</button><div id="rd" class="rd"></div><svg id="ch" viewBox="0 0 340 210"></svg>
+<div class="sub" style="margin:6px 0 0"><span style="color:var(--c)">━ Mapa do Patrimônio</span> &nbsp; <span style="color:var(--m)">┅ Patrimônio necessário p/ a meta</span><span id="lgi"></span></div></div>
+
+<div class="card"><h2>INSS: o que você paga × o que recebe</h2>
+<div class="grid"><div class="k m"><small>Desconto médio</small><strong id="dP">-</strong><em id="dV"></em></div>
+<div class="k m"><small>Benefício estimado</small><strong id="bI">-</strong><em id="bC"></em></div></div>
+<div class="st" id="inv"></div></div>
+
+</div><div class="inp">
+<div class="card"><h2>Sua renda e meta</h2><div class="grid">
+<div><label>Renda mensal atual (R$)</label><input id="renda" type="number" inputmode="decimal" value="8000"></div>
+<div><label>Meta: % da renda na aposentadoria</label><input id="meta" type="number" inputmode="decimal" value="100"></div>
+<div><label>Patrimônio inicial (R$)</label><input id="v0" type="number" inputmode="decimal" value="0"></div>
+<div><label>Aporte mensal (R$)</label><input id="apt" type="number" inputmode="decimal" value="2500"></div>
+<div><label>Aumento real do aporte (% ao ano)</label><input id="step" type="number" inputmode="decimal" value="0"></div>
+<div><label>Prazo (anos)</label><input id="anos" type="number" inputmode="numeric" value="30"></div>
+<div><label>Retirada sustentável (% a.a.)</label><input id="saque" type="number" inputmode="decimal" value="5"></div><div><label>Inflação (IPCA % a.a.)</label><input id="infl" type="number" step="0.1" inputmode="decimal" value="4.5"></div>
+</div></div>
+
+<div class="card"><h2>Carteira · % e retorno real a.a.</h2>
+<div class="row"><span></span><label style="margin:0">% carteira</label><label style="margin:0">Taxa real %</label></div>
+<div class="row"><span>Ações (dividendos)</span><input id="w0" type="number" value="30"><input id="r0" type="number" step="0.1" value="7"></div>
+<div class="row"><span>FIIs</span><input id="w1" type="number" value="15"><input id="r1" type="number" step="0.1" value="6"></div>
+<div class="row"><span>ETFs (S&amp;P 500)</span><input id="w2" type="number" value="25"><input id="r2" type="number" step="0.1" value="6.5"></div>
+<div class="row"><span>Renda fixa (IPCA+)</span><input id="w3" type="number" value="30"><input id="r3" type="number" step="0.1" value="5.5"></div>
+<div class="st" id="wsum"></div></div>
+
+<div class="card"><h2>Parâmetros do INSS</h2><div class="grid">
+<div><label>Desconto médio (%) · editável</label><input id="inssPct" type="number" step="0.01" value="0"></div>
+<div><label>Coeficiente do benefício (%)</label><input id="coef" type="number" value="80"></div>
+<div><label>Teto do INSS (R$)</label><input id="teto" type="number" value="8475.55"></div></div>
+<div class="fn">Desconto calculado pela tabela progressiva (7,5% / 9% / 12% / 14%) até o teto; ajuste se necessário. Coeficiente: 60% + 2% por ano acima de 20 anos de contribuição (30 anos ≈ 80%).</div></div>
+
+</div></div>
+<div class="fn">Simulação ilustrativa, em valores reais. Rentabilidade passada não garante resultado futuro. Não é recomendação de investimento. Consulte um profissional.</div>
+</div>
+
+<div class="bar" id="bar" style="display:none"><button id="bE">🧭 Etapas</button><button class="p" id="bP">📄 Relatório em PDF</button></div>
+
+<div id="md"><div class="in"><h1>ETAPAS DO <b>MAPA DO PATRIMÔNIO</b></h1><div id="etl"></div><button id="cl">Fechar</button></div></div>
+
+<div id="dlg"><div class="in"><h1 id="dT"></h1><div id="dB"></div><div class="dact"><button id="dCan">Cancelar</button><button class="p" id="dOk">OK</button></div></div></div>
+<div id="toast"></div>
+<script>
+const ETAPAS=[
+["Diagnóstico","Mapeamos renda, gastos, dívidas, patrimônio atual e objetivo de vida."],
+["Meta de aposentadoria","Definimos a renda mensal desejada e o patrimônio necessário."],
+["Reserva e proteção","Reserva de emergência e proteções antes de investir para o longo prazo."],
+["Diversificação","Distribuição entre renda fixa, ações, FIIs e ETFs conforme o perfil."],
+["Aportes e acompanhamento","Aportes mensais disciplinados e revisões periódicas da carteira."],
+["Renda e perenidade","Fase de usufruto: dividendos e resgates planejados sem consumir o principal."]];
+const $=i=>document.getElementById(i),n=i=>parseFloat($(i).value)||0;
+const f=v=>'R$ '+Math.round(v).toLocaleString('pt-BR');
+const fk=v=>Math.abs(v)>=1e6?'R$ '+(v/1e6).toFixed(2).replace('.',',')+' mi':f(v);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slug=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'plano';
+const KEY='finandica.planos.v1';
+const FIELDS=['renda','meta','v0','apt','step','anos','saque','infl','w0','w1','w2','w3','r0','r1','r2','r3','inssPct','coef','teto'];
+const DEF={renda:8000,meta:100,v0:0,apt:2500,step:0,anos:30,saque:5,infl:4.5,w0:30,w1:15,w2:25,w3:30,r0:7,r1:6,r2:6.5,r3:5.5,inssPct:0,coef:80,teto:8475.55,touched:false};
+let DB={plans:[]},memOnly=false,cid=null,touched=false,S={},loading=false,saveT=null;
+const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let tt;function toast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(tt);tt=setTimeout(()=>{e.style.display='none'},2800)}
+/* ---------- armazenamento ---------- */
+function clean(p){if(!p||typeof p!=='object'||!p.data||typeof p.data!=='object')return null;const d={};FIELDS.forEach(k=>{const v=Number(p.data[k]);d[k]=Number.isFinite(v)?v:DEF[k]});d.touched=!!p.data.touched;
+return{id:(String(p.id||'').replace(/[^\w-]/g,'')||uid()),name:String(p.name||'Plano').slice(0,80),note:String(p.note||'').slice(0,160),created:Number(p.created)||Date.now(),updated:Number(p.updated)||Date.now(),data:d}}
+function load(){try{localStorage.setItem('__t','1');localStorage.removeItem('__t');const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);if(o&&Array.isArray(o.plans))DB={plans:o.plans.map(clean).filter(Boolean)}}}catch(e){memOnly=true}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(DB));memOnly=false;return true}catch(e){memOnly=true;return false}}
+function showWarn(){$('warn').style.display='block'}
+function inssCalc(r,teto){const b=[[1621,.075],[2902.84,.09],[4354.27,.12],[teto,.14]];let p=0,d=0,x=Math.min(r,teto);for(const[t,a]of b){if(x>p){d+=(Math.min(x,t)-p)*a;p=t}}return r?d/r*100:0}
+function mk(name,note){const t=Date.now();return{id:uid(),name,note,created:t,updated:t,data:Object.assign({},DEF,{inssPct:+inssCalc(DEF.renda,DEF.teto).toFixed(2),touched:false})}}
+/* ---------- modelo (funcao pura) ---------- */
+function model(D){
+const renda=D.renda,anos=Math.max(1,Math.min(60,Math.round(D.anos))),W=[D.w0,D.w1,D.w2,D.w3],R=[D.r0,D.r1,D.r2,D.r3];
+const sw=W.reduce((a,b)=>a+b,0)||1,r=W.reduce((a,w,i)=>a+w/sw*R[i],0)/100,rm=Math.pow(1+r,1/12)-1;
+let V=D.v0,a=D.apt,tot=0;const sr=[V];
+for(let m=1;m<=anos*12;m++){V=V*(1+rm)+a;tot+=a;if(m%12===0){sr.push(V);a*=1+D.step/100}}
+const sq=D.saque/100,metaR=renda*D.meta/100,need=metaR*12/sq,rendaM=V*sq/12;
+const ben=Math.min(renda,D.teto)*D.coef/100,desc=renda*D.inssPct/100;
+const g=Math.pow(1+rm,anos*12),pm=(need-D.v0*g)*rm/(g-1),fvI=desc*(g-1)/rm;
+return{renda,anos,r,V,tot,metaR,need,rendaM,ben,desc,sr,pm,fvI,sw,sq}}
+function readData(){const d={};FIELDS.forEach(k=>{d[k]=n(k)});d.touched=touched;return d}
+function fillInputs(D){FIELDS.forEach(k=>{$(k).value=D[k]});touched=!!D.touched}
+function curPlan(){return DB.plans.find(p=>p.id===cid)||{name:'Simulação',note:''}}
+function queueSave(){if(!cid)return;$('sv').textContent='Salvando...';clearTimeout(saveT);saveT=setTimeout(savePlan,500)}
+function savePlan(){clearTimeout(saveT);saveT=null;const p=DB.plans.find(x=>x.id===cid);if(!p)return;p.data=readData();p.updated=Date.now();const ok=persist();$('sv').textContent=ok?'✔ Salvo automaticamente':'⚠ Não foi possível salvar neste navegador';if(!ok)showWarn()}
+/* ---------- calculo da tela ---------- */
+function calc(){
+const D=readData();
+if(!touched){const v=+inssCalc(D.renda,D.teto).toFixed(2);$('inssPct').value=v.toFixed(2);D.inssPct=v}
+S=model(D);const{renda,anos,r,V,tot,metaR,need,rendaM,ben,desc,pm,fvI,sw,sq}=S,dTot=desc*12*anos;
+$('wsum').innerHTML=(sw===100?'<span class=ok>✔ Soma 100%</span>':'<span class=no>⚠ Soma '+sw+'% (normalizado)</span>')+' · retorno real médio: <b>'+(r*100).toFixed(2)+'% a.a.</b>';
+$('tA').textContent=anos;$('rI').textContent=f(ben);$('rIp').textContent=(renda?ben/renda*100:0).toFixed(0)+'% da renda atual';
+$('rM').textContent=f(rendaM);$('rMp').textContent=(renda?rendaM/renda*100:0).toFixed(0)+'% da renda atual';
+$('pat').textContent=f(V);$('aTot').textContent='aportado: '+f(tot+n('v0'));
+$('mt').textContent=f(metaR)+'/mês';$('need').textContent='exige '+f(need);
+$('stt').innerHTML=V>=need?'<span class=ok>✔ Meta atingida com os aportes atuais.</span>':'<span class=no>⚠ Faltam '+f(need-V)+'. Aporte necessário ≈ '+f(Math.max(pm,0))+'/mês.</span>';
+$('dP').textContent=$('inssPct').value+'%';$('dV').textContent=f(desc)+'/mês · '+f(dTot)+' em '+anos+' anos';
+$('bI').textContent=f(ben);$('bC').textContent=renda>n('teto')?'limitado ao teto':'média × coeficiente';
+$('inv').innerHTML='Se o desconto do INSS ('+f(desc)+'/mês) fosse investido na carteira: <b class=ok>'+f(fvI)+'</b> em '+anos+' anos ≈ '+f(fvI*sq/12)+'/mês.';
+draw();if(!loading)queueSave()}
+/* ---------- grafico ---------- */
+function pts(arr,mx,x0,y0,w,h){return arr.map((v,i)=>[x0+i/(arr.length-1||1)*w,y0+h-Math.min(v/mx,1)*h])}
+let showI=false,cur=null;
+function draw(){const{sr,need}=S,mx=Math.max(need,...sr)*1.05||1,x0=44,y0=10,w=286,h=170,P=pts(sr,mx,x0,y0,w,h);const ii=n('infl')/100,nc=sr.map((v,i)=>v/Math.pow(1+ii,i)),PN=pts(nc,mx,x0,y0,w,h);
+let s='<defs><filter id="gl"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00f5d4" stop-opacity=".35"/><stop offset="1" stop-color="#00f5d4" stop-opacity="0"/></linearGradient></defs>';
+for(let i=0;i<=4;i++){const y=y0+h-i/4*h;s+=`<line x1="${x0}" x2="${x0+w}" y1="${y}" y2="${y}" stroke="#1e2a44"/><text x="${x0-4}" y="${y+3}" fill="#8a9bc0" font-size="8" text-anchor="end">${(mx*i/4/1e6).toFixed(1)}M</text>`}
+const yn=y0+h-need/mx*h,L=P.map(p=>p.join(',')).join(' ');
+s+=`<line x1="${x0}" x2="${x0+w}" y1="${yn}" y2="${yn}" stroke="#ff2bd6" stroke-dasharray="5 4" filter="url(#gl)"/>`;
+s+=`<polygon points="${x0},${y0+h} ${L} ${x0+w},${y0+h}" fill="url(#ar)"/><polyline points="${L}" fill="none" stroke="#00f5d4" stroke-width="2.5" filter="url(#gl)"/>`;
+const st=Math.max(1,Math.ceil(S.anos/6));sr.forEach((v,i)=>{if(i%st===0||i===sr.length-1)s+=`<text x="${P[i][0]}" y="${y0+h+14}" fill="#8a9bc0" font-size="8" text-anchor="middle">${i}a</text>`});
+if(showI)s+=`<polyline points="${PN.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#ffe14d" stroke-width="2" filter="url(#gl)"/>`;
+const k=cur==null?sr.length-1:Math.min(cur,sr.length-1),e=P[k];
+s+=`<line x1="${e[0]}" x2="${e[0]}" y1="${y0}" y2="${y0+h}" stroke="#ffffff66" stroke-dasharray="3 3"/><circle cx="${e[0]}" cy="${e[1]}" r="5" fill="#00f5d4" filter="url(#gl)"/>`;
+if(showI)s+=`<circle cx="${PN[k][0]}" cy="${PN[k][1]}" r="4" fill="#ffe14d" filter="url(#gl)"/>`;
+$('ch').innerHTML=s;
+$('rd').innerHTML='Ano <b>'+k+'</b> · patrimônio <b class=ok>'+f(sr[k])+'</b>'+(showI?'<br>Sem correção da inflação (poder de compra): <b style="color:var(--y)">'+f(nc[k])+'</b> · valor nominal: '+f(sr[k]*Math.pow(1+ii,k)):'<br>Arraste no gráfico para ver ano e valor')}
+
+$('etl').innerHTML=ETAPAS.map((e,i)=>`<div class=et><i>${i+1}</i><div><b>${e[0]}</b><p>${e[1]}</p></div></div>`).join('');
+const sv=$('ch');sv.addEventListener('pointermove',ev=>{const r=sv.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width*340;cur=Math.max(0,Math.min(S.sr.length-1,Math.round((x-44)/286*(S.sr.length-1))));draw()});
+$('bI2').onclick=()=>{showI=!showI;$('bI2').textContent=(showI?'☑':'☐')+' Mostrar inflação';$('lgi').innerHTML=showI?' &nbsp; <span style="color:var(--y)">━ Sem correção da inflação</span>':'';draw()};
+$('bE').onclick=()=>$('md').style.display='block';$('cl').onclick=()=>$('md').style.display='none';
+$('bP').onclick=async()=>{try{
+const{jsPDF}=window.jspdf,d=new jsPDF({unit:'mm',format:'a4'}),q=S,PW=210,M=14,CW=182;
+const TEAL=[0,150,136],MAG=[200,30,160],NAVY=[14,21,36],GR=[100,112,134],LN=[221,227,238],LT=[246,248,252],TX=[34,42,60],OK=[22,140,90];
+const fm=v=>'R$ '+Math.round(v).toLocaleString('pt-BR'),pc=v=>Math.round(v)+'%',dc=(v,k)=>v.toFixed(k).replace('.',',');
+const pname=curPlan().name;let y=0;
+const tx=(t,x,yy,sz,col,st,al)=>{d.setFont('helvetica',st||'normal');d.setFontSize(sz);d.setTextColor(col[0],col[1],col[2]);d.text(String(t),x,yy,al?{align:al}:undefined)};
+const pg=()=>{d.addPage();y=20};
+const room=h=>{if(y+h>278)pg()};
+const hd=t=>{room(18);y+=4;tx(t,M,y,13,NAVY,'bold');d.setDrawColor(0,150,136);d.setLineWidth(.8);d.line(M,y+2.2,M+16,y+2.2);y+=9};
+const para=(t,o={})=>{const sz=o.sz||10;d.setFont('helvetica',o.st||'normal');d.setFontSize(sz);const L=d.splitTextToSize(t,CW-(o.ind||0));for(const l of L){room(sz*.5+1);tx(l,M+(o.ind||0),y,sz,o.col||TX,o.st);y+=sz*.5+.9}y+=(o.gap===undefined?2:o.gap)};
+const table=(cols,rows,rh)=>{rh=rh||6.4;
+const head=()=>{d.setFillColor(14,21,36);d.rect(M,y,CW,rh+1,'F');let x=M;cols.forEach(c=>{tx(c[0],c[2]==='l'?x+2:x+c[1]-2,y+rh*.7+.4,8,[255,255,255],'bold',c[2]==='l'?undefined:'right');x+=c[1]});y+=rh+1};
+room(rh*3+1);head();
+rows.forEach((r,ri)=>{if(y+rh>280){pg();head()}
+if(r.hl)d.setFillColor(222,245,234);else if(ri%2)d.setFillColor(246,248,252);else d.setFillColor(255,255,255);
+d.rect(M,y,CW,rh,'F');let x=M;cols.forEach((c,ci)=>{tx(r.v[ci],c[2]==='l'?x+2:x+c[1]-2,y+rh*.7,8.3,r.hl?OK:TX,(r.b||r.hl)?'bold':'normal',c[2]==='l'?undefined:'right');x+=c[1]});
+d.setDrawColor(221,227,238);d.setLineWidth(.15);d.line(M,y+rh,M+CW,y+rh);y+=rh});
+y+=4};
+/* dados */
+const ii=n('infl')/100,inv=q.tot+n('v0'),step=n('step')/100,sq=q.sq,pctRenda=v=>q.renda?v/q.renda*100:0;
+let ap=n('apt'),cum=n('v0');const rows=[];
+for(let i=1;i<q.sr.length;i++){cum+=ap*12;rows.push({a:i,am:ap,cum,V:q.sr[i],ren:q.sr[i]-cum,rm:q.sr[i]*sq/12});ap*=1+step}
+const hit=rows.find(r=>r.V>=q.need),dTot=q.desc*12*q.anos;
+/* cabecalho */
+d.setFillColor(0,150,136);d.rect(0,0,PW,3,'F');
+tx('FINANDICA',M,15,9,TEAL,'bold');
+tx('Mapa do Patrimônio',M,25,24,NAVY,'bold');
+tx('Plano: '+d.splitTextToSize(pname,CW-20)[0],M,32,11.5,TEAL,'bold');
+tx('Relatório de simulação: aposentadoria pelo INSS x plano estruturado',M,37.5,9.5,GR);
+tx('Gerado em '+new Date().toLocaleDateString('pt-BR')+'  |  valores de hoje (poder de compra atual)',M,42.5,9,GR);
+y=49;
+/* cartoes */
+const K=[['Patrimônio em '+q.anos+' anos',fm(q.V),'investido: '+fm(inv)+'  |  rendimentos: '+fm(q.V-inv),TEAL],
+['Renda mensal no plano',fm(q.rendaM),pc(pctRenda(q.rendaM))+' da renda atual',TEAL],
+['Renda mensal só com INSS',fm(q.ben),pc(pctRenda(q.ben))+' da renda atual',MAG],
+['Meta de renda mensal',fm(q.metaR),'exige patrimônio de '+fm(q.need),MAG]];
+const kw=(CW-5)/2,kh=24;
+K.forEach((k,i)=>{const x=M+(i%2)*(kw+5),yy=y+Math.floor(i/2)*(kh+5);
+d.setFillColor(246,248,252);d.setDrawColor(221,227,238);d.setLineWidth(.3);d.roundedRect(x,yy,kw,kh,2,2,'FD');
+d.setFillColor(k[3][0],k[3][1],k[3][2]);d.rect(x,yy+3,1.4,kh-6,'F');
+tx(k[0],x+5,yy+7,8.5,GR);tx(k[1],x+5,yy+15,15,k[3],'bold');tx(k[2],x+5,yy+20.5,7.5,GR)});
+y+=2*(kh+5)+1;
+const ok=q.V>=q.need,stt=ok?'Meta atingida com os aportes atuais.':'Faltam '+fm(q.need-q.V)+' para a meta. Aporte necessário: cerca de '+fm(Math.max(q.pm,0))+' por mês.';
+if(ok){d.setFillColor(226,246,236);d.setDrawColor(22,140,90)}else{d.setFillColor(255,244,214);d.setDrawColor(214,160,0)}
+d.setLineWidth(.4);d.roundedRect(M,y,CW,9,2,2,'FD');tx(stt,M+4,y+6,9.5,ok?OK:[150,100,0],'bold');y+=11;
+/* resumo */
+hd('Resumo explicativo');
+para('O objetivo',{st:'bold',col:NAVY,gap:.4});
+para('Hoje você ganha '+fm(q.renda)+' por mês e quer manter '+n('meta')+'% desse valor na aposentadoria, ou seja, '+fm(q.metaR)+' por mês. Para gerar essa renda retirando '+dc(sq*100,1)+'% do patrimônio por ano, sem consumir o principal, seria preciso acumular cerca de '+fm(q.need)+'.');
+para('O plano',{st:'bold',col:NAVY,gap:.4});
+para('Investindo '+fm(n('apt'))+' por mês durante '+q.anos+' anos'+(step?' (com aumento real de '+dc(step*100,1)+'% ao ano no aporte)':'')+(n('v0')?', partindo de '+fm(n('v0')):'')+', com retorno real médio de '+dc(q.r*100,2)+'% ao ano, o patrimônio chega a '+fm(q.V)+'. Desse total, '+fm(inv)+' saíram do seu bolso e '+fm(q.V-inv)+' vieram dos rendimentos. Esse patrimônio gera uma renda de '+fm(q.rendaM)+' por mês, o equivalente a '+pc(pctRenda(q.rendaM))+' da sua renda atual.');
+para('O resultado',{st:'bold',col:NAVY,gap:.4});
+para(ok?'Com esse plano a meta é atingida'+(hit?' a partir do ano '+hit.a:'')+'. O patrimônio final fica '+fm(q.V-q.need)+' acima do necessário, o que dá uma folga para imprevistos.':'Com os aportes atuais a meta não é atingida: faltam '+fm(q.need-q.V)+'. Para chegar lá, o aporte mensal precisaria ser de cerca de '+fm(Math.max(q.pm,0))+'. Outras saídas são aumentar o prazo, subir o aporte ao longo dos anos ou reduzir a meta de renda.');
+para('Comparação com o INSS',{st:'bold',col:NAVY,gap:.4});
+para('Só com o INSS, o benefício estimado seria de '+fm(q.ben)+' por mês ('+pc(pctRenda(q.ben))+' da renda atual), respeitando o teto de '+fm(n('teto'))+'. Ao longo de '+q.anos+' anos, o desconto médio de '+dc(n('inssPct'),2)+'% sobre o salário soma '+fm(dTot)+'. Se esse mesmo valor mensal fosse investido na carteira, viraria '+fm(q.fvI)+', gerando cerca de '+fm(q.fvI*sq/12)+' por mês. O INSS e o plano são cenários separados e não foram somados.');
+/* premissas */
+hd('Premissas usadas');
+table([['Premissa',46,'l'],['Valor',45,'r'],['Premissa',46,'l'],['Valor',45,'r']],[
+{v:['Renda mensal atual',fm(q.renda),'Meta (% da renda)',n('meta')+'%']},
+{v:['Patrimônio inicial',fm(n('v0')),'Aporte mensal',fm(n('apt'))]},
+{v:['Aumento real do aporte',dc(step*100,1)+'% a.a.','Prazo',q.anos+' anos']},
+{v:['Retirada sustentável',dc(sq*100,1)+'% a.a.','Inflação (IPCA)',dc(n('infl'),1)+'% a.a.']}]);
+/* grafico */
+hd('Evolução do patrimônio');
+room(86);
+{const x0=M+17,w=CW-19,h=56,y0=y+2,mx=Math.max(q.need,...q.sr)*1.05||1,PT=pts(q.sr,mx,x0,y0,w,h);
+const ax=v=>mx>=1e6?dc(v/1e6,1)+' mi':Math.round(v/1e3)+' mil';
+const ar=[[x0,y0+h]].concat(PT,[[PT[PT.length-1][0],y0+h]]),rel=[];for(let k=1;k<ar.length;k++)rel.push([ar[k][0]-ar[k-1][0],ar[k][1]-ar[k-1][1]]);
+d.setFillColor(214,243,238);d.lines(rel,ar[0][0],ar[0][1],[1,1],'F',true);
+for(let i=0;i<=4;i++){const yy=y0+h-i/4*h;d.setDrawColor(221,227,238);d.setLineWidth(.2);d.line(x0,yy,x0+w,yy);tx(ax(mx*i/4),x0-2,yy+1,7.5,GR,'normal','right')}
+const yn=y0+h-q.need/mx*h;d.setDrawColor(200,30,160);d.setLineWidth(.5);d.setLineDashPattern([1.8,1.4],0);d.line(x0,yn,x0+w,yn);d.setLineDashPattern([],0);
+tx('Necessário: '+fm(q.need),x0+w,yn-1.5,7.5,MAG,'bold','right');
+d.setDrawColor(0,150,136);d.setLineWidth(.9);for(let i=1;i<PT.length;i++)d.line(PT[i-1][0],PT[i-1][1],PT[i][0],PT[i][1]);
+const e=PT[PT.length-1];d.setFillColor(0,150,136);d.circle(e[0],e[1],1.2,'F');
+tx(fm(q.V),e[0]-2,Math.max(e[1]-2.5,y0+3),8,TEAL,'bold','right');
+const st=Math.max(1,Math.ceil(q.anos/10));q.sr.forEach((v,i)=>{if(i%st===0||i===q.sr.length-1)tx(i===0?'0':i+'a',PT[i][0],y0+h+5,7.5,GR,'normal','center')});
+y=y0+h+11;
+d.setDrawColor(0,150,136);d.setLineWidth(.9);d.line(M,y-1,M+8,y-1);tx('Patrimônio acumulado (valores de hoje)',M+10,y,8,TX);
+d.setDrawColor(200,30,160);d.setLineWidth(.5);d.setLineDashPattern([1.8,1.4],0);d.line(M+88,y-1,M+96,y-1);d.setLineDashPattern([],0);tx('Patrimônio necessário para a meta',M+98,y,8,TX);
+y+=6}
+/* carteira */
+hd('Carteira proposta');
+{const nm=['Ações (dividendos)','FIIs','ETFs (S&P 500)','Renda fixa (IPCA+)'],W=[0,1,2,3].map(i=>n('w'+i)),R=[0,1,2,3].map(i=>n('r'+i));
+const rw=nm.map((t,i)=>({v:[t,dc(W[i]/q.sw*100,1)+'%',dc(R[i],1)+'%',dc(W[i]/q.sw*R[i],2)+' p.p.']}));
+rw.push({b:true,v:['Carteira total','100%',dc(q.r*100,2)+'%',dc(q.r*100,2)+' p.p.']});
+table([['Classe de ativo',80,'l'],['% da carteira',34,'r'],['Retorno real a.a.',34,'r'],['Contribuição',34,'r']],rw);
+para('Retorno real é o ganho acima da inflação. A contribuição mostra quanto cada classe adiciona ao retorno médio da carteira.',{sz:8.5,col:GR})}
+/* INSS */
+hd('INSS: o que você paga x o que recebe');
+table([['Item',92,'l'],['Valor',90,'r']],[
+{v:['Desconto médio sobre a renda',dc(n('inssPct'),2)+'%']},
+{v:['Desconto mensal',fm(q.desc)]},
+{v:['Total descontado em '+q.anos+' anos',fm(dTot)]},
+{v:['Benefício estimado do INSS por mês',fm(q.ben)+'  ('+pc(pctRenda(q.ben))+' da renda)'],b:true},
+{v:['Se o desconto fosse investido: patrimônio em '+q.anos+' anos',fm(q.fvI)]},
+{v:['Renda mensal que esse patrimônio geraria',fm(q.fvI*sq/12)],b:true}]);
+/* planilha */
+pg();hd('Planilha ano a ano');
+para('Cada linha mostra a situação no fim do ano, em valores de hoje. A linha verde marca o primeiro ano em que o patrimônio atinge o valor necessário para a meta.',{sz:9,col:GR});
+table([['Ano',14,'l'],['Aporte mensal',28,'r'],['Total investido',32,'r'],['Rendimentos',32,'r'],['Patrimônio',34,'r'],['Renda/mês',24,'r'],['% da meta',18,'r']],
+rows.map(r=>({hl:hit&&r.a===hit.a,v:[r.a,fm(r.am),fm(r.cum),fm(r.ren),fm(r.V),fm(r.rm),q.metaR?pc(r.rm/q.metaR*100):'-']})),6.2);
+para('Como ler as colunas',{st:'bold',col:NAVY,gap:.4,sz:9});
+['Aporte mensal: valor investido por mês naquele ano.','Total investido: tudo que saiu do seu bolso até ali, incluindo o patrimônio inicial.','Rendimentos: ganho acumulado da carteira acima da inflação.','Patrimônio: total acumulado (investido + rendimentos).','Renda/mês: quanto o patrimônio rende por mês com retirada de '+dc(sq*100,1)+'% ao ano.','% da meta: renda do plano dividida pela meta de '+fm(q.metaR)+' por mês.'].forEach(t=>para('- '+t,{sz:8.5,ind:3,gap:.6}));
+y+=3;
+para('Simulação ilustrativa, em valores reais (já descontada a inflação). Rentabilidade passada não garante resultado futuro. Este documento não é recomendação de investimento; consulte um profissional.',{sz:8,col:GR});
+/* rodape */
+const NP=d.getNumberOfPages();for(let i=1;i<=NP;i++){d.setPage(i);d.setDrawColor(221,227,238);d.setLineWidth(.2);d.line(M,288,M+CW,288);tx('Finandica | '+d.splitTextToSize(pname,110)[0],M,292.5,8,GR);tx('Página '+i+' de '+NP,M+CW,292.5,8,GR,'normal','right')}
+await saveBlob(d.output('blob'),'Finandica-'+slug(pname)+'.pdf');
+}catch(e){if(e&&e.code!=='declined')toast('Não foi possível gerar o PDF.')}};
+/* ---------- download (Claude, navegador e celular) ---------- */
+async function saveBlob(blob,fn){let dl=null;try{dl=await window.claude?.use?.('downloads')}catch(_){}
+if(dl){try{await dl.save({filename:fn,data:blob});return}catch(e){if(e&&e.code==='declined')return}}
+const u=URL.createObjectURL(blob),ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(ios){if(!window.open(u,'_blank'))location.href=u}else{const a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove()}
+setTimeout(()=>URL.revokeObjectURL(u),60000)}
+/* ---------- telas ---------- */
+function show(v){$('home').style.display=v==='home'?'block':'none';$('sim').style.display=v==='sim'?'block':'none';$('bar').style.display=v==='sim'?'flex':'none';window.scrollTo(0,0)}
+function resetInfl(){showI=false;cur=null;$('bI2').textContent='☐ Mostrar inflação';$('lgi').innerHTML=''}
+function openPlan(id){const p=DB.plans.find(x=>x.id===id);if(!p)return;cid=id;loading=true;fillInputs(Object.assign({},DEF,p.data));$('pn').textContent=p.name;$('sv').textContent='✔ Salvo automaticamente';resetInfl();show('sim');calc();loading=false}
+function backHome(){if(saveT)savePlan();cid=null;show('home');renderHome()}
+/* ---------- lista de planos ---------- */
+const fdt=t=>new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+function card(p){const s=model(p.data),ok=s.V>=s.need;
+return '<div class="pc"><div class="ph"><div><b class="pn">'+esc(p.name)+'</b>'+(p.note?'<div class="pnote">'+esc(p.note)+'</div>':'')+'</div><span class="chip '+(ok?'ok':'no')+'">'+(ok?'Meta atingida':'Faltam '+fk(s.need-s.V))+'</span></div>'
++'<div class="g3"><div><small>Patrimônio em '+s.anos+' anos</small><strong>'+fk(s.V)+'</strong></div><div><small>Renda/mês</small><strong>'+fk(s.rendaM)+'</strong></div><div><small>Meta/mês</small><strong>'+fk(s.metaR)+'</strong></div></div>'
++'<div class="pm">Aporte '+f(p.data.apt)+'/mês · '+s.anos+' anos · atualizado em '+fdt(p.updated)+'</div>'
++'<div class="pa"><button class="p" data-a="open" data-id="'+esc(p.id)+'">Abrir e editar</button><div class="pa2"><button data-a="ren" data-id="'+esc(p.id)+'">Renomear</button><button data-a="dup" data-id="'+esc(p.id)+'">Duplicar</button><button class="dg" data-a="del" data-id="'+esc(p.id)+'">Excluir</button></div></div></div>'}
+function renderHome(){
+const q=($('srch').value||'').trim().toLowerCase(),all=DB.plans.length;
+const list=DB.plans.filter(p=>(p.name+' '+p.note).toLowerCase().includes(q)).sort((a,b)=>b.updated-a.updated);
+$('cnt').textContent=all+(all===1?' plano':' planos');$('srch').style.display=all>=4?'block':'none';
+$('lst').innerHTML=list.length?list.map(card).join(''):(all?'<div class="empty">Nenhum plano encontrado para essa busca.</div>':'<div class="empty"><b>Nenhum plano cadastrado ainda</b><br>Toque em “＋ Novo plano” para criar o primeiro. Você pode ter quantos quiser, abrir para editar e excluir quando precisar.</div>')}
+/* ---------- janelas (novo, renomear, excluir) ---------- */
+let dOkFn=null;
+function dlg(t,b,ok,fn,danger){$('dT').textContent=t;$('dB').innerHTML=b;$('dOk').textContent=ok;$('dOk').className=danger?'dg':'p';dOkFn=fn;$('dlg').style.display='block';const i=$('dB').querySelector('input');if(i)setTimeout(()=>{i.focus();i.select()},60)}
+function closeD(){$('dlg').style.display='none';dOkFn=null}
+$('dCan').onclick=closeD;$('dOk').onclick=()=>{const fn=dOkFn;if(fn&&fn()===false)return;closeD()};
+$('dlg').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')$('dOk').click();if(e.key==='Escape')closeD()});
+$('dlg').addEventListener('click',e=>{if(e.target===$('dlg'))closeD()});
+const formBody=(nm,nt)=>'<label>Nome do plano</label><input id="dName" type="text" maxlength="80" value="'+esc(nm)+'" placeholder="Ex.: Aposentadoria do João"><div style="height:10px"></div><label>Cliente / observação (opcional)</label><input id="dNote" type="text" maxlength="160" value="'+esc(nt)+'" placeholder="Ex.: meta para 2045, perfil moderado">';
+function newDlg(){dlg('Novo plano',formBody('',''),'Criar plano',()=>{const p=mk($('dName').value.trim()||'Plano '+(DB.plans.length+1),$('dNote').value.trim());DB.plans.push(p);if(!persist())showWarn();openPlan(p.id);toast('Plano criado')})}
+function renDlg(id){const p=DB.plans.find(x=>x.id===id);if(!p)return;dlg('Renomear plano',formBody(p.name,p.note),'Salvar',()=>{p.name=$('dName').value.trim()||p.name;p.note=$('dNote').value.trim();p.updated=Date.now();if(!persist())showWarn();if(cid===id)$('pn').textContent=p.name;renderHome();toast('Plano atualizado')})}
+function delDlg(id){const p=DB.plans.find(x=>x.id===id);if(!p)return;dlg('Excluir plano?','<p style="margin:6px 0;font-size:14px;line-height:1.5">O plano <b>'+esc(p.name)+'</b> será removido deste aparelho. Essa ação não pode ser desfeita.</p>','Excluir',()=>{DB.plans=DB.plans.filter(x=>x.id!==id);if(!persist())showWarn();renderHome();toast('Plano excluído')},true)}
+function dupPlan(id){const p=DB.plans.find(x=>x.id===id);if(!p)return;const c=JSON.parse(JSON.stringify(p));c.id=uid();c.name=(p.name+' (cópia)').slice(0,80);c.created=c.updated=Date.now();DB.plans.push(c);if(!persist())showWarn();renderHome();toast('Plano duplicado')}
+$('lst').addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const id=b.dataset.id,a=b.dataset.a;if(a==='open')openPlan(id);else if(a==='ren')renDlg(id);else if(a==='dup')dupPlan(id);else if(a==='del')delDlg(id)});
+$('bN').onclick=newDlg;$('srch').addEventListener('input',renderHome);
+$('bBack').onclick=backHome;$('bRen').onclick=()=>renDlg(cid);
+/* ---------- backup ---------- */
+$('bX').onclick=async()=>{if(!DB.plans.length){toast('Nenhum plano para exportar.');return}
+const d=new Date(),ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+try{await saveBlob(new Blob([JSON.stringify({app:'finandica-mapa',versao:1,exportado:Date.now(),plans:DB.plans},null,1)],{type:'application/json'}),'Finandica-planos-'+ds+'.json')}catch(_){toast('Não foi possível exportar.')}};
+$('bImp').onclick=()=>$('fi').click();
+$('fi').onchange=e=>{const fl=e.target.files[0];e.target.value='';if(!fl)return;const rd=new FileReader();
+rd.onload=()=>{try{const o=JSON.parse(rd.result),pl=Array.isArray(o)?o:o.plans;if(!Array.isArray(pl))throw 0;let add=0,upd=0;
+pl.map(clean).filter(Boolean).forEach(p=>{const ex=DB.plans.find(x=>x.id===p.id);if(!ex){DB.plans.push(p);add++}else if(p.updated>ex.updated){Object.assign(ex,p);upd++}});
+if(!persist())showWarn();renderHome();toast(add+upd?add+' novo(s), '+upd+' atualizado(s).':'Nenhum plano novo no arquivo.')}catch(_){toast('Arquivo de backup inválido.')}};rd.readAsText(fl)};
+/* ---------- inicio ---------- */
+document.querySelectorAll('#sim input').forEach(i=>i.addEventListener('input',()=>{if(i.id==='inssPct')touched=true;calc()}));
+document.querySelectorAll('input[type=number]:not([inputmode])').forEach(i=>i.setAttribute('inputmode','decimal'));
+window.addEventListener('pagehide',()=>{if(saveT)savePlan()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&saveT)savePlan()});
+load();if(memOnly)showWarn();renderHome();show('home');
+</script></body></html>
